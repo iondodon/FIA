@@ -1,15 +1,18 @@
-fast walk,athletic,and
-practices sports,athletic,and
-tall person,athletic,and
-above 180cm tall,tall person,then
+fast walk,athletic,
+practices sports,athletic,
+tall person,athletic,
 athletic,loonie,and
-likes Biden,democratic,and
-respects equality,democratic,and
+likes Biden,democratic,
+respects equality,democratic,
 democratic,loonie,and
-has a map,has travel stuff with him,or
-wears a hat,has travel stuff with him,or
-has a camera,has travel stuff with him,or
-has travel stuff with him,tourist,and
-looks around a lot,excited,or
-smiles,excited,or
-excited,tourist,and
+has a map,has travel stuff with him,
+wears a hat,has travel stuff with him,
+has a camera,has travel stuff with him,
+has a backpack,has travel stuff with him,
+has travel stuff with him,tourist,or
+looks around a lot,excited,
+smiles,excited,
+excited,tourist,or
+loonie,person,and
+tourist,person,and
+person,,
