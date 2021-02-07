@@ -33,14 +33,6 @@ def read_knowledge():
             set_fact(new_fact)
 
 
-def has_child(fact_name) -> bool:
-    for fact_key in knowledge:
-        fact = knowledge[fact_key]
-        if fact.parent_fact_name == fact_name:
-            return True
-    return False
-
-
 def ask(fact_name) -> bool:
     response = input(fact_name + "? (y/n): ")
     return True if response == 'y' else False
@@ -54,26 +46,20 @@ def check_fact(fact_name) -> bool:
             fact_state = fact_state and check_fact(child_fact_name)
         return fact_state
     elif fact.operand == "or":
+        aux = False
         for child_fact_name in fact.child_facts:
-            if check_fact(child_fact_name) is True:
-                return True
-        return False
+            next_fact_status = check_fact(child_fact_name)
+            if next_fact_status is True:
+                print(fact_name + ", because " + child_fact_name)
+                aux = True
+        return aux
     else:
         return fact_state and ask(fact_name)
 
 
 if __name__ == '__main__':
     read_knowledge()
-
-    print("---Checking if the person is a tourist---")
-    if check_fact("tourist"):
-        print("Yes, the person is a tourist")
+    if check_fact("person"):
+        print("Tourist types printed above")
     else:
-        print("No, the person is not a tourist, which means it is a loonie")
-
-    # print()
-    # print("---Checking if the person is a loonie---")
-    # if check_fact("loonie"):
-    #     print("Yes, the person is a loonie")
-    # else:
-    #     print("No, the person is not a loonie, which means it is a tourist")
+        print("No tourist type found, probably a loonie")
