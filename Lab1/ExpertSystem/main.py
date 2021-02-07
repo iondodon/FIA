@@ -64,4 +64,16 @@ def check_fact(fact_name) -> bool:
 
 if __name__ == '__main__':
     read_knowledge()
-    print(check_fact("tourist"))
+
+    print("---Checking if the person is a tourist---")
+    if check_fact("tourist"):
+        print("Yes, the person is a tourist")
+    else:
+        print("No, the person is not a tourist, which means it is a loonie")
+
+    # print()
+    # print("---Checking if the person is a loonie---")
+    # if check_fact("loonie"):
+    #     print("Yes, the person is a loonie")
+    # else:
+    #     print("No, the person is not a loonie, which means it is a tourist")
