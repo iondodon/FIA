@@ -50,7 +50,9 @@ def check_fact(fact_name) -> bool:
         for child_fact_name in fact.child_facts:
             next_fact_status = check_fact(child_fact_name)
             if next_fact_status is True:
-                print(fact_name + ", because " + child_fact_name)
+                print()
+                print(child_fact_name.upper())
+                print(fact_name.upper() + ", because " + child_fact_name)
                 aux = True
         return aux
     else:
