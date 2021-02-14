@@ -12,6 +12,7 @@ except ImportError:
     import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
 import math
 import random
+from rock_behaviour import update_rock_position
 
 # Globals		 
 DIMENSIONS = 2
@@ -272,9 +273,12 @@ class Sprite:
             canvas.draw_image(self.image, self.image_center, self.image_size, self.pos, self.image_size, self.angle)
 
     def update(self):
-        for i in range(DIMENSIONS):
-            self.pos[i] %= CANVAS_RES[i]
-            self.pos[i] += self.vel[i]
+        if self.angle_vel == 0:
+            for i in range(DIMENSIONS):
+                self.pos[i] %= CANVAS_RES[i]
+                self.pos[i] += self.vel[i]
+        else:
+            update_rock_position(self)
 
         self.angle += self.angle_vel
         self.age += 1
