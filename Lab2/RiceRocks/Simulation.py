@@ -26,8 +26,9 @@ const_friction = .01
 const_thrust = .1
 const_rotation = .1
 const_missile = 5
-const_rock_vicinity = 3  # the rocks won't spawn at a distance closed than 3 radii to the center of the ship
+const_rock_vicinity = 0  # the rocks won't spawn at a distance closed than 3 radii to the center of the ship
 const_rock_speed = INIT_ROCK_SPEED = 1  # the rocks will move/spin faster the greather the constant is
+MAX_ROCKS = 50
 
 
 class ImageInfo:
@@ -246,6 +247,7 @@ class Sprite:
     def __init__(self, pos, vel, ang, ang_vel, image, info, sound=None):
         self.pos = [pos[0], pos[1]]
         self.vel = [vel[0], vel[1]]
+        self.acc = [0, 0]
         self.angle = ang
         self.angle_vel = ang_vel
         self.image = image
@@ -278,7 +280,7 @@ class Sprite:
                 self.pos[i] %= CANVAS_RES[i]
                 self.pos[i] += self.vel[i]
         else:
-            update_rock_position(self)
+            update_rock_position(self, rock_group)
 
         self.angle += self.angle_vel
         self.age += 1
@@ -389,7 +391,8 @@ def rock_spawner():
     global const_rock_speed
     const_rock_speed += 1 / 300.0  # in 5 minutes the speed of the rocks will be 2 times bigger
 
-    if len(rock_group) < 12:
+    # TODO: it was 15 instad of MAX_ROCKS
+    if len(rock_group) < MAX_ROCKS:
         # global rock_group
         newpos = [0, 0]
         newvel = [0, 0]
