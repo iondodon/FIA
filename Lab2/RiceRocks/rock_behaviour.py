@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 CANVAS_RES = (800, 600)
 PERCEPTION_RADIUS = 150
@@ -8,6 +9,7 @@ VELOCITY_DIVIDER = 1.2
 
 
 def native_array(np_array):
+    np_array = np.array(np_array)
     return [np_array[0].item(), np_array[1].item()]
 
 
@@ -29,7 +31,11 @@ def align(current, boids):
 def flock(current, boids):
     alignment = align(current, boids)
     alignment = np.divide(alignment, LIMIT)
-    current.acc = native_array(alignment)
+    alignment = native_array(alignment)
+    if alignment != [0, 0]:
+        current.acc = native_array(alignment)
+    if not hasattr(current, 'acc'):
+        current.acc = [random.randrange(-1, 2), random.randrange(-1, 2)]
 
 
 def update_rock_position(current, boids):
@@ -45,7 +51,6 @@ def update_rock_position(current, boids):
 
     current.pos = native_array(position)
     current.vel = native_array(velocity)
-    current.acc = native_array(acceleration)
 
     current.pos[0] %= CANVAS_RES[0]
     current.pos[1] %= CANVAS_RES[1]
