@@ -56,15 +56,35 @@ def cohesion(current, boids):
     return steering
 
 
+def separation(current, boids):
+    steering = np.array([0, 0])
+    total = 0
+    for other in boids:
+        diff = np.array(other.pos) - np.array(current.pos)
+        dist = np.linalg.norm(diff)
+        if other is not current and dist < PERCEPTION_RADIUS:
+            diff_vec = np.subtract(np.array(current.pos), np.array(other.pos))
+            diff_vec = np.divide(diff_vec, dist) if dist != 0 else diff_vec
+            steering = np.add(steering, np.array(diff_vec))
+            total += 1
+    if total > 0:
+        steering = np.divide(steering, total)
+        steering = np.subtract(steering, np.array(current.vel))
+    return steering
+
+
 def flock(current, boids):
     if not hasattr(current, 'acc'):
-        # current.acc = [random.randrange(-1, 2), random.randrange(-1, 2)]
-        current.acc = [0, 0]
+        current.acc = [random.randrange(-1, 2), random.randrange(-1, 2)]
+        # current.acc = [0, 0]
 
     alignment = align(current, boids)
     cohesion_ = cohesion(current, boids)
+    separation_ = separation(current, boids)
 
-    total = np.add(np.array(current.acc), alignment)
+    total = np.add(np.array(current.acc), separation_)
+    total = np.multiply(total, 5)
+    total = np.add(total, alignment)
     total = np.add(total, cohesion_)
 
     total = native_array(total)
