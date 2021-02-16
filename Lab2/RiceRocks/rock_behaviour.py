@@ -40,24 +40,36 @@ def align(current, boids):
     return steering
 
 
-# def cohesion(current, boids):
-#     steering = np.array([0, 0])
-#     total = 0
-#     for other in boids:
-#         diff = np.array(other.pos) - np.array(current.pos)
-#         dist = np.linalg.norm(diff)
-#         if other is not current and dist < PERCEPTION_RADIUS:
-#             steering = np.add(steering, np.array(other.pos))
-#             total += 1
+def cohesion(current, boids):
+    steering = np.array([0, 0])
+    total = 0
+    for other in boids:
+        diff = np.array(other.pos) - np.array(current.pos)
+        dist = np.linalg.norm(diff)
+        if other is not current and dist < PERCEPTION_RADIUS:
+            steering = np.add(steering, np.array(other.pos))
+            total += 1
+    if total > 0:
+        steering = np.divide(steering, total)
+        steering = np.subtract(steering, np.array(current.pos))
+        steering = np.subtract(steering, np.array(current.vel))
+    return steering
 
 
 def flock(current, boids):
-    alignment = align(current, boids)
-    alignment = native_array(alignment)
-    if alignment != [0, 0]:
-        current.acc = native_array(alignment)
     if not hasattr(current, 'acc'):
-        current.acc = [random.randrange(-1, 2), random.randrange(-1, 2)]
+        # current.acc = [random.randrange(-1, 2), random.randrange(-1, 2)]
+        current.acc = [0, 0]
+
+    alignment = align(current, boids)
+    cohesion_ = cohesion(current, boids)
+
+    total = np.add(np.array(current.acc), alignment)
+    total = np.add(total, cohesion_)
+
+    total = native_array(total)
+    if total != [0, 0]:
+        current.acc = native_array(total)
 
 
 def update_rock_position(current, boids):
@@ -72,6 +84,7 @@ def update_rock_position(current, boids):
     position = np.add(position, velocity)
     velocity = np.add(velocity, acceleration)
     velocity = normalize(velocity)
+    current.acc = [0, 0]
 
     current.pos = native_array(position)
     current.vel = native_array(velocity)
