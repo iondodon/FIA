@@ -2,21 +2,11 @@ import numpy as np
 
 CANVAS_RES = (800, 600)
 PERCEPTION_RADIUS = 100
-ACCELERATION = 0.01
-LIMIT = 800
-VELOCITY_DIVIDER = 1.2
-MAX_SPEED = 5
-MAX_FORCE = 0.1
+MAX_SPEED = 3
+MAX_FORCE = 0.2
 
 
-def normalize(v):
-    norm = np.linalg.norm(v)
-    if norm == 0:
-        return v
-    return v / norm
-
-
-def edges(current):
+def edge(current):
     current.pos[0] %= CANVAS_RES[0]
     current.pos[1] %= CANVAS_RES[1]
 
@@ -26,7 +16,7 @@ def native_array(array):
     return [np_array[0].item(), np_array[1].item()]
 
 
-def flock_vectors(current, boids):
+def flock_vectors(current, boids, ship):
     align_ = np.array([0, 0])
     cohesion_ = np.array([0, 0])
     separation_ = np.array([0, 0])
@@ -67,9 +57,9 @@ def flock_vectors(current, boids):
     return align_, cohesion_, separation_
 
 
-def update_rock_position(current, boids):
+def update_rock_position(current, boids, ship):
     acceleration = [0, 0]
-    alignment, cohesion, separation = flock_vectors(current, boids)
+    alignment, cohesion, separation = flock_vectors(current, boids, ship)
 
     total = np.add(acceleration, alignment)
     total = np.add(total, cohesion)
@@ -85,7 +75,24 @@ def update_rock_position(current, boids):
     position = np.add(position, velocity)
     velocity = np.add(velocity, acceleration)
 
+    # ///////////
+    total_cohesion = np.subtract(ship.pos, current.pos)
+    if np.linalg.norm(total_cohesion) > 0:
+        total_cohesion = (total_cohesion / np.linalg.norm(total_cohesion)) * MAX_SPEED
+    total_cohesion = np.subtract(total_cohesion, np.array(current.vel))
+    if np.linalg.norm(total_cohesion) > MAX_FORCE:
+        total_cohesion = (total_cohesion / np.linalg.norm(total_cohesion)) * MAX_FORCE
+
+    total = np.add([0, 0], total_cohesion)
+    total = native_array(total)
+    if total != [0, 0]:
+        acceleration = native_array(total)
+
+    position = np.add(position, velocity)
+    velocity = np.add(velocity, acceleration)
+    # ///////////
+
     current.pos = native_array(position)
     current.vel = native_array(velocity)
 
-    edges(current)
+    edge(current)
