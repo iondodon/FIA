@@ -103,10 +103,10 @@ explosion_sound = simplegui.load_sound(
     "http://commondatastorage.googleapis.com/codeskulptor-assets/sounddogs/explosion.mp3")
 
 # Setting volume
-soundtrack.set_volume(.7)
-missile_sound.set_volume(.2)
-ship_thrust_sound.set_volume(.5)
-explosion_sound.set_volume(.5)
+soundtrack.set_volume(.0)
+missile_sound.set_volume(.0)
+ship_thrust_sound.set_volume(.0)
+explosion_sound.set_volume(.0)
 
 
 # Helper functions to handle transformations

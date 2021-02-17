@@ -1,11 +1,12 @@
 import numpy as np
-import random
 
 CANVAS_RES = (800, 600)
-PERCEPTION_RADIUS = 150
+PERCEPTION_RADIUS = 100
 ACCELERATION = 0.01
 LIMIT = 800
 VELOCITY_DIVIDER = 1.2
+MAX_SPEED = 5
+MAX_FORCE = 0.1
 
 
 def normalize(v):
@@ -25,86 +26,64 @@ def native_array(array):
     return [np_array[0].item(), np_array[1].item()]
 
 
-def align(current, boids):
-    steering = np.array([0, 0])
+def flock_vectors(current, boids):
+    align_ = np.array([0, 0])
+    cohesion_ = np.array([0, 0])
+    separation_ = np.array([0, 0])
     total = 0
     for other in boids:
         diff = np.array(other.pos) - np.array(current.pos)
         dist = np.linalg.norm(diff)
         if other is not current and dist < PERCEPTION_RADIUS:
-            steering = np.add(steering, np.array(other.vel))
-            total += 1
-    if total > 0:
-        steering = np.divide(steering, total)
-        steering = np.subtract(steering, np.array(current.vel))
-    return steering
+            align_ = np.add(align_, np.array(other.vel))
 
+            cohesion_ = np.add(cohesion_, np.array(other.pos))
 
-def cohesion(current, boids):
-    steering = np.array([0, 0])
-    total = 0
-    for other in boids:
-        diff = np.array(other.pos) - np.array(current.pos)
-        dist = np.linalg.norm(diff)
-        if other is not current and dist < PERCEPTION_RADIUS:
-            steering = np.add(steering, np.array(other.pos))
-            total += 1
-    if total > 0:
-        steering = np.divide(steering, total)
-        steering = np.subtract(steering, np.array(current.pos))
-        steering = np.subtract(steering, np.array(current.vel))
-    return steering
-
-
-def separation(current, boids):
-    steering = np.array([0, 0])
-    total = 0
-    for other in boids:
-        diff = np.array(other.pos) - np.array(current.pos)
-        dist = np.linalg.norm(diff)
-        if other is not current and dist < PERCEPTION_RADIUS:
             diff_vec = np.subtract(np.array(current.pos), np.array(other.pos))
             diff_vec = np.divide(diff_vec, dist) if dist != 0 else diff_vec
-            steering = np.add(steering, np.array(diff_vec))
+            separation_ = np.add(separation_, np.array(diff_vec))
+
             total += 1
     if total > 0:
-        steering = np.divide(steering, total)
-        steering = np.subtract(steering, np.array(current.vel))
-    return steering
+        align_ = np.divide(align_, total)
+        align_ = (align_ / np.linalg.norm(align_)) * MAX_SPEED
+        align_ = np.subtract(align_, np.array(current.vel))
 
+        cohesion_ = np.divide(cohesion_, total)
+        cohesion_ = np.subtract(cohesion_, np.array(current.pos))
+        if np.linalg.norm(cohesion_) > 0:
+            cohesion_ = (cohesion_ / np.linalg.norm(cohesion_)) * MAX_SPEED
+        cohesion_ = np.subtract(cohesion_, np.array(current.vel))
+        if np.linalg.norm(cohesion_) > MAX_FORCE:
+            cohesion_ = (cohesion_ / np.linalg.norm(cohesion_)) * MAX_FORCE
 
-def flock(current, boids):
-    if not hasattr(current, 'acc'):
-        current.acc = [random.randrange(-1, 2), random.randrange(-1, 2)]
-        # current.acc = [0, 0]
+        separation_ = np.divide(separation_, total)
+        if np.linalg.norm(separation_) > 0:
+            separation_ = (separation_ / np.linalg.norm(separation_)) * MAX_SPEED
+        separation_ = np.subtract(separation_, np.array(current.vel))
+        if np.linalg.norm(separation_) > MAX_FORCE:
+            separation_ = (separation_ / np.linalg.norm(separation_)) * MAX_FORCE
 
-    alignment = align(current, boids)
-    cohesion_ = cohesion(current, boids)
-    separation_ = separation(current, boids)
-
-    total = np.add(np.array(current.acc), separation_)
-    total = np.multiply(total, 5)
-    total = np.add(total, alignment)
-    total = np.add(total, cohesion_)
-
-    total = native_array(total)
-    if total != [0, 0]:
-        current.acc = native_array(total)
+    return align_, cohesion_, separation_
 
 
 def update_rock_position(current, boids):
-    flock(current, boids)
+    acceleration = [0, 0]
+    alignment, cohesion, separation = flock_vectors(current, boids)
+
+    total = np.add(acceleration, alignment)
+    total = np.add(total, cohesion)
+    total = np.add(total, separation)
+    total = native_array(total)
+    if total != [0, 0]:
+        acceleration = native_array(total)
 
     position = np.array(current.pos)
     velocity = np.array(current.vel)
-    acceleration = np.array(current.acc)
-
-    print(position, velocity, acceleration)
+    acceleration = np.array(acceleration)
 
     position = np.add(position, velocity)
     velocity = np.add(velocity, acceleration)
-    velocity = normalize(velocity)
-    current.acc = [0, 0]
 
     current.pos = native_array(position)
     current.vel = native_array(velocity)
