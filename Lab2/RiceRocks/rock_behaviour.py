@@ -4,7 +4,6 @@ CANVAS_RES = (800, 600)
 PERCEPTION_RADIUS = 100
 MAX_SPEED = 4
 MAX_FORCE = 0.1
-BEHAVIOUR = 'CALM'
 
 
 def edge(current):
@@ -123,8 +122,14 @@ def update_rock_position(current, boids, ship, missiles):
     position = np.add(position, velocity)
     velocity = np.add(velocity, acceleration)
 
-    # position, velocity = attack(position, velocity, acceleration, current, ship, missiles)
-    position, velocity = defense(position, velocity, acceleration, current, ship, missiles)
+    # by default CALM behaviour is used
+    no_missiles = len(missiles)
+    # if there are less than 3 missiles the attack behaviour is used
+    if 0 < no_missiles <= 3:
+        position, velocity = attack(position, velocity, acceleration, current, ship, missiles)
+    # if there are mote than 3 missiles then defense behaviour is used
+    elif no_missiles > 3:
+        position, velocity = defense(position, velocity, acceleration, current, ship, missiles)
 
     current.pos = native_array(position)
     current.vel = native_array(velocity)
