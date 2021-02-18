@@ -2,8 +2,9 @@ import numpy as np
 
 CANVAS_RES = (800, 600)
 PERCEPTION_RADIUS = 100
-MAX_SPEED = 3
-MAX_FORCE = 0.2
+MAX_SPEED = 4
+MAX_FORCE = 0.1
+BEHAVIOUR = 'CALM'
 
 
 def edge(current):
@@ -16,50 +17,97 @@ def native_array(array):
     return [np_array[0].item(), np_array[1].item()]
 
 
-def flock_vectors(current, boids, ship):
-    align_ = np.array([0, 0])
-    cohesion_ = np.array([0, 0])
-    separation_ = np.array([0, 0])
+def max_force(vec):
+    if np.linalg.norm(vec) > MAX_FORCE:
+        return (vec / np.linalg.norm(vec)) * MAX_FORCE
+    return vec
+
+
+def max_speed(vec):
+    if np.linalg.norm(vec) > 0:
+        return (vec / np.linalg.norm(vec)) * MAX_SPEED
+
+
+def flock_vectors(current, boids):
+    alignment = np.array([0, 0])
+    cohesion = np.array([0, 0])
+    separation = np.array([0, 0])
     total = 0
     for other in boids:
         diff = np.array(other.pos) - np.array(current.pos)
         dist = np.linalg.norm(diff)
         if other is not current and dist < PERCEPTION_RADIUS:
-            align_ = np.add(align_, np.array(other.vel))
+            alignment = np.add(alignment, np.array(other.vel))
 
-            cohesion_ = np.add(cohesion_, np.array(other.pos))
+            cohesion = np.add(cohesion, np.array(other.pos))
 
             diff_vec = np.subtract(np.array(current.pos), np.array(other.pos))
             diff_vec = np.divide(diff_vec, dist) if dist != 0 else diff_vec
-            separation_ = np.add(separation_, np.array(diff_vec))
+            separation = np.add(separation, np.array(diff_vec))
 
             total += 1
     if total > 0:
-        align_ = np.divide(align_, total)
-        align_ = (align_ / np.linalg.norm(align_)) * MAX_SPEED
-        align_ = np.subtract(align_, np.array(current.vel))
+        alignment = np.divide(alignment, total)
+        alignment = (alignment / np.linalg.norm(alignment)) * MAX_SPEED
+        alignment = np.subtract(alignment, np.array(current.vel))
 
-        cohesion_ = np.divide(cohesion_, total)
-        cohesion_ = np.subtract(cohesion_, np.array(current.pos))
-        if np.linalg.norm(cohesion_) > 0:
-            cohesion_ = (cohesion_ / np.linalg.norm(cohesion_)) * MAX_SPEED
-        cohesion_ = np.subtract(cohesion_, np.array(current.vel))
-        if np.linalg.norm(cohesion_) > MAX_FORCE:
-            cohesion_ = (cohesion_ / np.linalg.norm(cohesion_)) * MAX_FORCE
+        cohesion = np.divide(cohesion, total)
+        cohesion = np.subtract(cohesion, np.array(current.pos))
+        cohesion = max_speed(cohesion)
+        cohesion = np.subtract(cohesion, np.array(current.vel))
+        cohesion = max_force(cohesion)
 
-        separation_ = np.divide(separation_, total)
-        if np.linalg.norm(separation_) > 0:
-            separation_ = (separation_ / np.linalg.norm(separation_)) * MAX_SPEED
-        separation_ = np.subtract(separation_, np.array(current.vel))
-        if np.linalg.norm(separation_) > MAX_FORCE:
-            separation_ = (separation_ / np.linalg.norm(separation_)) * MAX_FORCE
+        separation = np.divide(separation, total)
+        separation = max_speed(separation)
+        separation = np.subtract(separation, np.array(current.vel))
+        separation = max_force(separation)
 
-    return align_, cohesion_, separation_
+    return alignment, cohesion, separation
 
 
-def update_rock_position(current, boids, ship):
+def attack(rock_position, rock_velocity, rock_acceleration, current, ship, missiles):
+    missiles_list = list(missiles)
+    attack_direction = np.subtract(ship.pos, current.pos)
+    if len(missiles_list) > 0:
+        attack_direction = np.subtract(missiles_list[0].pos, current.pos)
+
+    attack_direction = max_speed(attack_direction)
+    attack_direction = np.subtract(attack_direction, np.array(current.vel))
+    attack_direction = max_force(attack_direction)
+
+    attack_direction = native_array(attack_direction)
+    if attack_direction != [0, 0]:
+        rock_acceleration = native_array(attack_direction)
+
+    rock_position = np.add(rock_position, rock_velocity)
+    rock_velocity = np.add(rock_velocity, rock_acceleration)
+
+    return rock_position, rock_velocity
+
+
+def defense(rock_position, rock_velocity, rock_acceleration, current, ship, missiles):
+    missiles_list = list(missiles)
+    defense_direction = np.subtract(current.pos, ship.pos)
+    if len(missiles_list) > 0:
+        defense_direction = np.subtract(current.pos, missiles_list[0].pos)
+
+    defense_direction = max_speed(defense_direction)
+    defense_direction = np.subtract(defense_direction, np.array(current.vel))
+    defense_direction = max_force(defense_direction)
+
+    defense_direction = native_array(defense_direction)
+    if defense_direction != [0, 0]:
+        rock_acceleration = native_array(defense_direction)
+
+    rock_position = np.add(rock_position, rock_velocity)
+    rock_velocity = np.add(rock_velocity, rock_acceleration)
+
+    return rock_position, rock_velocity
+
+
+def update_rock_position(current, boids, ship, missiles):
     acceleration = [0, 0]
-    alignment, cohesion, separation = flock_vectors(current, boids, ship)
+    alignment, cohesion, separation = flock_vectors(current, boids)
 
     total = np.add(acceleration, alignment)
     total = np.add(total, cohesion)
@@ -75,22 +123,8 @@ def update_rock_position(current, boids, ship):
     position = np.add(position, velocity)
     velocity = np.add(velocity, acceleration)
 
-    # ///////////
-    total_cohesion = np.subtract(ship.pos, current.pos)
-    if np.linalg.norm(total_cohesion) > 0:
-        total_cohesion = (total_cohesion / np.linalg.norm(total_cohesion)) * MAX_SPEED
-    total_cohesion = np.subtract(total_cohesion, np.array(current.vel))
-    if np.linalg.norm(total_cohesion) > MAX_FORCE:
-        total_cohesion = (total_cohesion / np.linalg.norm(total_cohesion)) * MAX_FORCE
-
-    total = np.add([0, 0], total_cohesion)
-    total = native_array(total)
-    if total != [0, 0]:
-        acceleration = native_array(total)
-
-    position = np.add(position, velocity)
-    velocity = np.add(velocity, acceleration)
-    # ///////////
+    # position, velocity = attack(position, velocity, acceleration, current, ship, missiles)
+    position, velocity = defense(position, velocity, acceleration, current, ship, missiles)
 
     current.pos = native_array(position)
     current.vel = native_array(velocity)

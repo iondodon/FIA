@@ -278,7 +278,7 @@ class Sprite:
                 self.pos[i] %= CANVAS_RES[i]
                 self.pos[i] += self.vel[i]
         else:
-            update_rock_position(self, rock_group, my_ship)
+            update_rock_position(self, rock_group, my_ship, missile_group)
 
         self.angle += self.angle_vel
         self.age += 1
