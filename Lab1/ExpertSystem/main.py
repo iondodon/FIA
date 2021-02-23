@@ -53,6 +53,7 @@ def check_fact(fact_name) -> bool:
                 print()
                 print(child_fact_name.upper())
                 print(fact_name.upper() + ", because " + child_fact_name)
+                # return True
                 aux = True
         return aux
     else:
