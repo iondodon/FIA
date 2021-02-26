@@ -1,4 +1,5 @@
 ## Flocking Behaviour
+This simulation represents a classical flocking behaviour. 
 
 
 ### Environment
