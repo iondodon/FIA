@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="d7f2ca7b-2870-4d77-bd9e-82c258d8d8a2" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../../Lab3/FIA_Lab_3.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/../../Lab3/FIA_Lab_3.ipynb" afterDir="false" />
-    </list>
+    <list default="true" id="d7f2ca7b-2870-4d77-bd9e-82c258d8d8a2" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -98,6 +96,7 @@
       <workItem from="1614079981135" duration="2584000" />
       <workItem from="1614085894549" duration="61000" />
       <workItem from="1614327398736" duration="6303000" />
+      <workItem from="1614426580505" duration="75000" />
     </task>
     <servers />
   </component>
